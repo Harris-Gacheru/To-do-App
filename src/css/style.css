@@ -1,0 +1,275 @@
+:root{
+    --red: rgb(254, 82, 82);
+    --blue:#23a6f0; 
+    --dark-blue: #1476ae;
+}
+
+body,
+html{
+    width: 100vw;
+    height: 100vh;
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.wrapper{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    /* background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../images/bg1.jpg');
+    background-repeat: no-repeat;
+    background-size: cover; */
+    /* background: linear-gradient(to right, rgb(87, 136, 251), #36b5fe, #23a6f0); */
+}
+
+.todo{
+    width: 45vw;
+    height: 420px;
+    background-color: #fff;
+    box-shadow: 1px 1px 6px #888888;
+}
+
+.todo .title{
+    padding: 15px;
+    text-align: center;
+}
+
+.todo .tasks{
+    height: 320px;
+    margin: 2px;
+    padding: 20px 2px 20px 40px;
+    box-shadow: inset 4px 2px 10px #888888;
+    background-color: #f4f4f4;
+    overflow-y: scroll;
+}
+
+.todo .tasks::-webkit-scrollbar { 
+    display: none;  /* Safari and Chrome */
+}
+
+.task{
+    margin: 10px;
+    background-color: #fff;
+    box-shadow: 1px 1px 3px #888888;
+    display: flex;
+    position: relative;
+}
+
+
+.todo .tasks .task #checkbox{
+    position: absolute;
+    top: calc(50% - 6px);
+    left: -30px;
+}
+
+
+.task .actions{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.task .actions ion-icon{
+    font-size: 22px;
+    cursor: pointer;
+    margin: 0 2px;
+}
+
+.task .actions ion-icon:first-child{
+    color: var(--blue);
+}
+
+.task .actions ion-icon:last-child{
+    color: var(--red);
+}
+
+.task .color{
+    width: 3px;
+    background-color: var(--red);
+}
+
+.task .task-info{
+    margin: 0 10px;
+    width: 100%;
+}
+
+.task .task-info h4,
+.task .task-info .description{
+    margin: 10px 0;
+    width: 85%;
+}
+
+
+.task .task-info .time-status{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task .task-info .date{
+    color: #888888;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.task .task-info .date ion-icon{
+    margin-right: 3px;
+}
+
+.todo .btn{
+    text-align: right;
+    padding: 5px 2px;
+}
+
+.todo .btn button{
+    color: #fff;
+    background-color: var(--blue);
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.todo .btn button:hover{
+    background-color: var(--dark-blue);
+}
+
+/* completed task */
+.completed-tasks{
+    width: 45vw;
+    height: 420px;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* background-color: #f4f4f4; */
+    box-shadow: 1px 1px 6px #888888;
+}
+
+.completed-tasks h4{
+    font-size: 18px;
+    text-align: center;
+}
+
+.completed-tasks #completed-tasks{
+    height: 90%;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+.completed-tasks #completed-tasks .task .color{
+    background-color: #0c0;
+}
+
+.completed-tasks #completed-tasks .task .task-info h4{
+    text-align: left;
+}
+
+.completed-tasks #completed-tasks .task .task-info .time-status .status{
+    font-weight: bold;
+}
+
+.completed-tasks #completed-tasks .task .task-info .time-status .status .ontime{
+    font-weight: normal;
+    color: #0c0;
+}
+
+.completed-tasks #completed-tasks .task .task-info .time-status .status .late{
+    font-weight: normal;
+    color: #ff2e2e;
+}
+
+
+/* backdrop & modal */
+.backdrop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+}
+
+.modal{
+    background-color: #fff;
+    padding: 20px 25px;
+    z-index: 10;
+    position: relative;
+}
+
+.modal #close{
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.modal #close:hover{
+    color: var(--red);
+}
+
+.modal h4{
+    margin: 15px 0;
+    text-align: center;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+.modal form .form-group{
+    display: flex;
+    flex-direction: column;
+}
+
+.modal form .form-group label{
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.modal form .form-group input,
+.modal form .form-group textarea{
+    padding: 10px 12px;
+    outline: 1px solid #888888;
+    margin: 5px 0;
+    border: none;
+    border-radius: 4px;
+}
+
+.modal form .form-group input:hover,
+.modal form .form-group textarea:hover{
+    outline: 1px solid var(--blue);
+}
+
+.modal form button{
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--blue);
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+}
+
+.modal form button:hover{
+    background-color: var(--dark-blue);
+}
