@@ -107,9 +107,9 @@ let editTask = (e:any) => {
 
     let selected = e.parentElement.parentElement.parentElement
 
-    titleInput.value = selected.children[2].children[0].innerText
-    descriptionInput.value = selected.children[2].children[1].innerText
-    dateInput.value = selected.children[2].children[2].children[0].innerText
+    titleInput.value = selected.children[1].children[0].innerText
+    descriptionInput.value = selected.children[1].children[1].innerText
+    dateInput.value = selected.children[1].children[2].children[0].innerText
 
     selected.remove()
 }

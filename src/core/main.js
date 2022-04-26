@@ -70,9 +70,9 @@ var deleteTask = function (e) {
 var editTask = function (e) {
     formModal === null || formModal === void 0 ? void 0 : formModal.style.setProperty('visibility', 'visible');
     var selected = e.parentElement.parentElement.parentElement;
-    titleInput.value = selected.children[2].children[0].innerText;
-    descriptionInput.value = selected.children[2].children[1].innerText;
-    dateInput.value = selected.children[2].children[2].children[0].innerText;
+    titleInput.value = selected.children[1].children[0].innerText;
+    descriptionInput.value = selected.children[1].children[1].innerText;
+    dateInput.value = selected.children[1].children[2].children[0].innerText;
     selected.remove();
 };
 // complete task
