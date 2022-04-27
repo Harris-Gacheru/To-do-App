@@ -1,160 +1,102 @@
-let openModalBtn = document.getElementById('openForm')
-let formModal = document.getElementById('modal')
-let closeModalBtn = document.getElementById('close')
-let form = document.getElementById('addTaskForm')
-// form input
-let titleInput = <HTMLInputElement>document.getElementById('inputTitle')
-let descriptionInput = <HTMLTextAreaElement>document.getElementById('inputDescription')
-let dateInput = <HTMLInputElement>document.getElementById('inputDate')
-let msg = <HTMLDivElement>document.getElementById('msg')
+class Task {
+    constructor (public title: string, public description: string, public date: string){
+        this.title = title
+        this.description = description
+        this.date = date
+    }
 
-let tasks = <HTMLDivElement>document.getElementById('tasks')
-
-let doneBtn = document.getElementById('done')
-let completedTasksContainer = <HTMLDivElement>document.getElementById('completed-tasks-container')
-let completedTasks = <HTMLDivElement>document.getElementById('completed-tasks')
-completedTasksContainer.style.setProperty('display', 'none')
-
-// open modal
-openModalBtn?.addEventListener('click', () => {
-    formModal?.style.setProperty('visibility', 'visible')
-})
-// close modal
-closeModalBtn?.addEventListener('click', () => {
-    formModal?.style.setProperty('visibility', 'hidden')
-})
-
-// submit form
-form?.addEventListener('submit', (e) => {
-    e.preventDefault()
-
-    formValidation()
-})
-
-// validate form
-let formValidation = () => {
-    if ((titleInput.value === '') || (descriptionInput.value === '') || (dateInput.value === '')) {
-        msg.innerText = 'Fill in all the fields'
-        msg.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
-    }else {
-        msg.innerText = 'Task added successully'
-        msg.style.cssText = 'background-color: #c1fec1; color: #0c0; padding: 10px; border: 1px solid #0c0; border-radius: 4px'
-
-        addData()
-
-        setTimeout(() => {
-            msg.innerText = ''
-            msg.style.cssText = ''
-            formModal?.style.setProperty('visibility', 'hidden')
-        }, 700);
+    display(){
+        let task = new TaskHandler
+        task.createTask(this.title, this.description, this.date)
     }
 }
 
-let data: any = {}
-// add data
-let addData = () => {
-    data['title'] = titleInput.value
-    data['description'] = descriptionInput.value
-    data['date'] = dateInput.value
 
-    createTask()
-}
+class TaskHandler {
+    tasksDivElement: HTMLDivElement
+    completedTasksMain: HTMLDivElement
+    completedTasksDiv: HTMLDivElement
 
-// create task
-let createTask = () => {
-    tasks.innerHTML += 
-    `<div class="task">
-        <div class="color"></div>
-        <div class="task-info">
-            <h4>${titleInput.value}</h4>
-            <p class="description">${descriptionInput.value}</p>
+    constructor() {
+        this.tasksDivElement = <HTMLDivElement>document.getElementById('tasks')
+        this.completedTasksMain = <HTMLDivElement>document.getElementById('completed-tasks-container')
+        this.completedTasksDiv = <HTMLDivElement>document.getElementById('completed-tasks')
+    }
 
-            <div class="time-status">
-                <p class="date">
-                    <ion-icon name="time-outline"></ion-icon>
-                    ${dateInput.value}
-                </p>
-
-                <button id="done" onclick="markDone(this)">Mark as Done</button>
-            </div>
-
-            <div class="actions">
-                <ion-icon name="create-outline" onClick="editTask(this)"></ion-icon>
-
-                <ion-icon name="trash-outline" onClick="deleteTask(this)"></ion-icon>
-            </div>
-        </div>
-    </div>`
-
-    resetForm()
-}
-
-// reset form
-let resetForm = () => {
-    titleInput.value = ''
-    descriptionInput.value = ''
-    dateInput.value = ''
-}
-
-// delete
-let deleteTask = (e:any) => {
-    e.parentElement.parentElement.parentElement.remove()
-}
-
-// edit task
-let editTask = (e:any) => {
-    formModal?.style.setProperty('visibility', 'visible')
-
-    let selected = e.parentElement.parentElement.parentElement
-
-    titleInput.value = selected.children[1].children[0].innerText
-    descriptionInput.value = selected.children[1].children[1].innerText
-    dateInput.value = selected.children[1].children[2].children[0].innerText
-
-    selected.remove()
-}
-
-// complete task
-let markDone = (e: any) => {
-    let selected = e.parentElement.parentElement.parentElement
-
-    titleInput.value = selected.children[1].children[0].innerText
-    descriptionInput.value = selected.children[1].children[1].innerText
-    dateInput.value = selected.children[1].children[2].children[0].innerText
-
-    
-    completedTasksContainer.style.setProperty('display', 'block')
-    let status: any;
-    
-    if ((getDayDiff() > 0) && (getDayDiff() < 1)) {
-
-        status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.ceil(getDayDiff())} day(s)</span></p>`
-                
-    } else if(getDayDiff() < -1) {
-
-        status = `<p class='status'>Status: <span class='late'>Task submitted late by ${Math.abs(Math.ceil(getDayDiff()))} day(s)</span></p>`
-                     
-    }else if(getDayDiff() > 0){
-
-        status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.floor(getDayDiff())} day(s)</span></p>`
-
-    }else {
-
-        status = `<p class='status'>Status: <span class='ontime'>Task completed on time</span></p>`
-                
-    }    
-
-    completedTasks.innerHTML += 
+    createTask(title: string, description: string, date: string) {
+        this.tasksDivElement.innerHTML += 
         `<div class="task">
             <div class="color"></div>
             <div class="task-info">
-                <h4>${titleInput.value}</h4>
-                <p class="description">${descriptionInput.value}</p>
+                <h4>${title}</h4>
+                <p class="description">${description}</p>
 
                 <div class="time-status">
                     <p class="date">
                         <ion-icon name="time-outline"></ion-icon>
-                        ${dateInput.value}
+                        ${date}
+                    </p>
+
+                    <button id="done" onclick="markDone(this)">Mark as Done</button>
+                </div>
+
+                <div class="actions">
+                    <ion-icon name="create-outline" onClick="editTask(this)"></ion-icon>
+
+                    <ion-icon name="trash-outline"  onClick="deleteTask(this)"></ion-icon>
+                </div>
+            </div>
+        </div>`
+    }
+
+    deleteTask(e: any) {
+        e.parentElement.parentElement.parentElement.remove()
+    }
+
+    editTask(e: any){
+        let selectedTask = e.parentElement.parentElement.parentElement
+
+        new ModalHandler().open()
+        new FormHandler().assign(selectedTask.children[1].children[0].innerText, selectedTask.children[1].children[1].innerText, selectedTask.children[1].children[2].children[0].innerText)
+
+        deleteTask(e)
+    }
+
+    markAsComplete(e : any) {
+        this.completedTasksMain.style.setProperty('display', 'block')
+        let selectedTask = e.parentElement.parentElement.parentElement
+        let date = selectedTask.children[1].children[2].children[0].innerText
+        let status: string
+
+        if ((this.getDayDiff(date) > 0) && (this.getDayDiff(date) < 1)) {
+
+            status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.ceil(this.getDayDiff(date))} day(s)</span></p>`
+                    
+        } else if(this.getDayDiff(date) < -1) {
+    
+            status = `<p class='status'>Status: <span class='late'>Task submitted late by ${Math.abs(Math.ceil(this.getDayDiff(date)))} day(s)</span></p>`
+                         
+        }else if(this.getDayDiff(date) > 0){
+    
+            status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.floor(this.getDayDiff(date))} day(s)</span></p>`
+    
+        }else {
+    
+            status = `<p class='status'>Status: <span class='ontime'>Task completed on time</span></p>`
+                    
+        }   
+        
+        this.completedTasksDiv.innerHTML += 
+        `<div class="task">
+            <div class="color"></div>
+            <div class="task-info">
+                <h4>${selectedTask.children[1].children[0].innerText}</h4>
+                <p class="description">${selectedTask.children[1].children[1].innerText}</p>
+
+                <div class="time-status">
+                    <p class="date">
+                        <ion-icon name="time-outline"></ion-icon>
+                        ${selectedTask.children[1].children[2].children[0].innerText}
                     </p>
 
                     ${status}
@@ -162,16 +104,116 @@ let markDone = (e: any) => {
             </div>
         </div>`
 
-    selected.remove()
-    resetForm()
+        selectedTask.remove()
+    }
+
+    getDayDiff(dueDate: string) {
+        let currentDate = new Date()
+        let due = new Date(dueDate)
+        let timeDiff = due.getTime() - currentDate.getTime()
+        let dayDiff = timeDiff/ (1000 * 3600 * 24)
+
+        return dayDiff
+    }
 }
 
-// get difference between due date and current date
-let getDayDiff = () => {
-    let current = new Date().getTime()
-    let dueDate = new Date(dateInput.value).getTime()
-    let timeDiff = dueDate - current
-    let dayDiff = timeDiff/ (1000 * 3600 * 24)
+class FormHandler {
 
-    return dayDiff
+    titleInput: HTMLInputElement
+    descriptionInput: HTMLTextAreaElement
+    dateInput: HTMLInputElement
+    addTaskBtn: HTMLButtonElement
+    alert: HTMLDivElement
+
+    constructor() {
+        this.titleInput = <HTMLInputElement>document.getElementById('inputTitle')
+        this.descriptionInput = <HTMLTextAreaElement>document.getElementById('inputDescription')
+        this.dateInput = <HTMLInputElement>document.getElementById('inputDate')
+        this.addTaskBtn = <HTMLButtonElement>document.getElementById('addTask')       
+        this.alert = <HTMLDivElement>document.getElementById('alert') 
+    }
+
+    validation(){
+        if ((this.titleInput.value === '') || (this.descriptionInput.value === '') || (this.dateInput.value === '')) {
+            return false
+        }else{
+            return true
+        }
+    }
+
+    submit() {
+        if(this.validation()){
+            this.alert.innerText = ''
+            this.alert.style.cssText = ''  
+            let task = new Task(this.titleInput.value, this.descriptionInput.value,this.dateInput.value)
+            task.display()
+            this.reset()
+            new ModalHandler().close()
+        }else{
+            this.alert.innerText = 'Fill in all the fields'
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'            
+        }
+
+        
+    }
+
+    reset() {
+        this.titleInput.value = ''
+        this.descriptionInput.value = ''
+        this.dateInput.value = ''
+    }
+
+    assign(title: string, description: string, date: string){
+        this.titleInput.value = title
+        this.descriptionInput.value = description
+        this.dateInput.value = date
+    }
 }
+
+class ModalHandler {
+    modal: HTMLDivElement
+
+    constructor() {
+        this.modal = <HTMLDivElement>document.getElementById('modal')
+    }
+
+    open(){
+        this.modal.style.setProperty('visibility', 'visible')
+    }
+
+    close() {
+        this.modal.style.setProperty('visibility', 'hidden')
+    }
+}
+
+// open modal
+let openModal = () => {
+    new ModalHandler().open()
+}
+
+// close modal
+let closeModal = () => {
+    new ModalHandler().close()
+}
+
+// onsubmit
+document.getElementById('modal')?.addEventListener('submit', (e: Event) => {
+    e.preventDefault()
+    new FormHandler().submit()
+})
+
+// delete
+let deleteTask = (e: Event) => {
+    new TaskHandler().deleteTask(e)
+}
+
+// edit
+let editTask = (e: Event) => {
+    new TaskHandler().editTask(e)
+}
+
+// mark as complete
+let markDone = (e: Event) => {
+    new TaskHandler().markAsComplete(e)
+}
+

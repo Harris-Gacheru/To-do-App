@@ -1,110 +1,144 @@
-var openModalBtn = document.getElementById('openForm');
-var formModal = document.getElementById('modal');
-var closeModalBtn = document.getElementById('close');
-var form = document.getElementById('addTaskForm');
-// form input
-var titleInput = document.getElementById('inputTitle');
-var descriptionInput = document.getElementById('inputDescription');
-var dateInput = document.getElementById('inputDate');
-var msg = document.getElementById('msg');
-var tasks = document.getElementById('tasks');
-var doneBtn = document.getElementById('done');
-var completedTasksContainer = document.getElementById('completed-tasks-container');
-var completedTasks = document.getElementById('completed-tasks');
-completedTasksContainer.style.setProperty('display', 'none');
+var _a;
+var Task = /** @class */ (function () {
+    function Task(title, description, date) {
+        this.title = title;
+        this.description = description;
+        this.date = date;
+        this.title = title;
+        this.description = description;
+        this.date = date;
+    }
+    Task.prototype.display = function () {
+        var task = new TaskHandler;
+        task.createTask(this.title, this.description, this.date);
+    };
+    return Task;
+}());
+var TaskHandler = /** @class */ (function () {
+    function TaskHandler() {
+        this.tasksDivElement = document.getElementById('tasks');
+        this.completedTasksMain = document.getElementById('completed-tasks-container');
+        this.completedTasksDiv = document.getElementById('completed-tasks');
+    }
+    TaskHandler.prototype.createTask = function (title, description, date) {
+        this.tasksDivElement.innerHTML +=
+            "<div class=\"task\">\n            <div class=\"color\"></div>\n            <div class=\"task-info\">\n                <h4>".concat(title, "</h4>\n                <p class=\"description\">").concat(description, "</p>\n\n                <div class=\"time-status\">\n                    <p class=\"date\">\n                        <ion-icon name=\"time-outline\"></ion-icon>\n                        ").concat(date, "\n                    </p>\n\n                    <button id=\"done\" onclick=\"markDone(this)\">Mark as Done</button>\n                </div>\n\n                <div class=\"actions\">\n                    <ion-icon name=\"create-outline\" onClick=\"editTask(this)\"></ion-icon>\n\n                    <ion-icon name=\"trash-outline\"  onClick=\"deleteTask(this)\"></ion-icon>\n                </div>\n            </div>\n        </div>");
+    };
+    TaskHandler.prototype.deleteTask = function (e) {
+        e.parentElement.parentElement.parentElement.remove();
+    };
+    TaskHandler.prototype.editTask = function (e) {
+        var selectedTask = e.parentElement.parentElement.parentElement;
+        new ModalHandler().open();
+        new FormHandler().assign(selectedTask.children[1].children[0].innerText, selectedTask.children[1].children[1].innerText, selectedTask.children[1].children[2].children[0].innerText);
+        deleteTask(e);
+    };
+    TaskHandler.prototype.markAsComplete = function (e) {
+        this.completedTasksMain.style.setProperty('display', 'block');
+        var selectedTask = e.parentElement.parentElement.parentElement;
+        var date = selectedTask.children[1].children[2].children[0].innerText;
+        var status;
+        if ((this.getDayDiff(date) > 0) && (this.getDayDiff(date) < 1)) {
+            status = "<p class='status'>Status: <span class='ontime'>Task completed earlier by ".concat(Math.ceil(this.getDayDiff(date)), " day(s)</span></p>");
+        }
+        else if (this.getDayDiff(date) < -1) {
+            status = "<p class='status'>Status: <span class='late'>Task submitted late by ".concat(Math.abs(Math.ceil(this.getDayDiff(date))), " day(s)</span></p>");
+        }
+        else if (this.getDayDiff(date) > 0) {
+            status = "<p class='status'>Status: <span class='ontime'>Task completed earlier by ".concat(Math.floor(this.getDayDiff(date)), " day(s)</span></p>");
+        }
+        else {
+            status = "<p class='status'>Status: <span class='ontime'>Task completed on time</span></p>";
+        }
+        this.completedTasksDiv.innerHTML +=
+            "<div class=\"task\">\n            <div class=\"color\"></div>\n            <div class=\"task-info\">\n                <h4>".concat(selectedTask.children[1].children[0].innerText, "</h4>\n                <p class=\"description\">").concat(selectedTask.children[1].children[1].innerText, "</p>\n\n                <div class=\"time-status\">\n                    <p class=\"date\">\n                        <ion-icon name=\"time-outline\"></ion-icon>\n                        ").concat(selectedTask.children[1].children[2].children[0].innerText, "\n                    </p>\n\n                    ").concat(status, "\n                </div>\n            </div>\n        </div>");
+        selectedTask.remove();
+    };
+    TaskHandler.prototype.getDayDiff = function (dueDate) {
+        var currentDate = new Date();
+        var due = new Date(dueDate);
+        var timeDiff = due.getTime() - currentDate.getTime();
+        var dayDiff = timeDiff / (1000 * 3600 * 24);
+        return dayDiff;
+    };
+    return TaskHandler;
+}());
+var FormHandler = /** @class */ (function () {
+    function FormHandler() {
+        this.titleInput = document.getElementById('inputTitle');
+        this.descriptionInput = document.getElementById('inputDescription');
+        this.dateInput = document.getElementById('inputDate');
+        this.addTaskBtn = document.getElementById('addTask');
+        this.alert = document.getElementById('alert');
+    }
+    FormHandler.prototype.validation = function () {
+        if ((this.titleInput.value === '') || (this.descriptionInput.value === '') || (this.dateInput.value === '')) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
+    FormHandler.prototype.submit = function () {
+        if (this.validation()) {
+            this.alert.innerText = '';
+            this.alert.style.cssText = '';
+            var task = new Task(this.titleInput.value, this.descriptionInput.value, this.dateInput.value);
+            task.display();
+            this.reset();
+            new ModalHandler().close();
+        }
+        else {
+            this.alert.innerText = 'Fill in all the fields';
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
+        }
+    };
+    FormHandler.prototype.reset = function () {
+        this.titleInput.value = '';
+        this.descriptionInput.value = '';
+        this.dateInput.value = '';
+    };
+    FormHandler.prototype.assign = function (title, description, date) {
+        this.titleInput.value = title;
+        this.descriptionInput.value = description;
+        this.dateInput.value = date;
+    };
+    return FormHandler;
+}());
+var ModalHandler = /** @class */ (function () {
+    function ModalHandler() {
+        this.modal = document.getElementById('modal');
+    }
+    ModalHandler.prototype.open = function () {
+        this.modal.style.setProperty('visibility', 'visible');
+    };
+    ModalHandler.prototype.close = function () {
+        this.modal.style.setProperty('visibility', 'hidden');
+    };
+    return ModalHandler;
+}());
 // open modal
-openModalBtn === null || openModalBtn === void 0 ? void 0 : openModalBtn.addEventListener('click', function () {
-    formModal === null || formModal === void 0 ? void 0 : formModal.style.setProperty('visibility', 'visible');
-});
+var openModal = function () {
+    new ModalHandler().open();
+};
 // close modal
-closeModalBtn === null || closeModalBtn === void 0 ? void 0 : closeModalBtn.addEventListener('click', function () {
-    formModal === null || formModal === void 0 ? void 0 : formModal.style.setProperty('visibility', 'hidden');
-});
-// submit form
-form === null || form === void 0 ? void 0 : form.addEventListener('submit', function (e) {
+var closeModal = function () {
+    new ModalHandler().close();
+};
+// onsubmit
+(_a = document.getElementById('modal')) === null || _a === void 0 ? void 0 : _a.addEventListener('submit', function (e) {
     e.preventDefault();
-    formValidation();
+    new FormHandler().submit();
 });
-// validate form
-var formValidation = function () {
-    if ((titleInput.value === '') || (descriptionInput.value === '') || (dateInput.value === '')) {
-        msg.innerText = 'Fill in all the fields';
-        msg.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
-    }
-    else {
-        msg.innerText = 'Task added successully';
-        msg.style.cssText = 'background-color: #c1fec1; color: #0c0; padding: 10px; border: 1px solid #0c0; border-radius: 4px';
-        addData();
-        setTimeout(function () {
-            msg.innerText = '';
-            msg.style.cssText = '';
-            formModal === null || formModal === void 0 ? void 0 : formModal.style.setProperty('visibility', 'hidden');
-        }, 700);
-    }
-};
-var data = {};
-// add data
-var addData = function () {
-    data['title'] = titleInput.value;
-    data['description'] = descriptionInput.value;
-    data['date'] = dateInput.value;
-    createTask();
-};
-// create task
-var createTask = function () {
-    tasks.innerHTML +=
-        "<div class=\"task\">\n        <div class=\"color\"></div>\n        <div class=\"task-info\">\n            <h4>".concat(titleInput.value, "</h4>\n            <p class=\"description\">").concat(descriptionInput.value, "</p>\n\n            <div class=\"time-status\">\n                <p class=\"date\">\n                    <ion-icon name=\"time-outline\"></ion-icon>\n                    ").concat(dateInput.value, "\n                </p>\n\n                <button id=\"done\" onclick=\"markDone(this)\">Mark as Done</button>\n            </div>\n\n            <div class=\"actions\">\n                <ion-icon name=\"create-outline\" onClick=\"editTask(this)\"></ion-icon>\n\n                <ion-icon name=\"trash-outline\" onClick=\"deleteTask(this)\"></ion-icon>\n            </div>\n        </div>\n    </div>");
-    resetForm();
-};
-// reset form
-var resetForm = function () {
-    titleInput.value = '';
-    descriptionInput.value = '';
-    dateInput.value = '';
-};
 // delete
 var deleteTask = function (e) {
-    e.parentElement.parentElement.parentElement.remove();
+    new TaskHandler().deleteTask(e);
 };
-// edit task
+// edit
 var editTask = function (e) {
-    formModal === null || formModal === void 0 ? void 0 : formModal.style.setProperty('visibility', 'visible');
-    var selected = e.parentElement.parentElement.parentElement;
-    titleInput.value = selected.children[1].children[0].innerText;
-    descriptionInput.value = selected.children[1].children[1].innerText;
-    dateInput.value = selected.children[1].children[2].children[0].innerText;
-    selected.remove();
+    new TaskHandler().editTask(e);
 };
-// complete task
+// mark as complete
 var markDone = function (e) {
-    var selected = e.parentElement.parentElement.parentElement;
-    titleInput.value = selected.children[1].children[0].innerText;
-    descriptionInput.value = selected.children[1].children[1].innerText;
-    dateInput.value = selected.children[1].children[2].children[0].innerText;
-    completedTasksContainer.style.setProperty('display', 'block');
-    var status;
-    if ((getDayDiff() > 0) && (getDayDiff() < 1)) {
-        status = "<p class='status'>Status: <span class='ontime'>Task completed earlier by ".concat(Math.ceil(getDayDiff()), " day(s)</span></p>");
-    }
-    else if (getDayDiff() < -1) {
-        status = "<p class='status'>Status: <span class='late'>Task submitted late by ".concat(Math.abs(Math.ceil(getDayDiff())), " day(s)</span></p>");
-    }
-    else if (getDayDiff() > 0) {
-        status = "<p class='status'>Status: <span class='ontime'>Task completed earlier by ".concat(Math.floor(getDayDiff()), " day(s)</span></p>");
-    }
-    else {
-        status = "<p class='status'>Status: <span class='ontime'>Task completed on time</span></p>";
-    }
-    completedTasks.innerHTML +=
-        "<div class=\"task\">\n            <div class=\"color\"></div>\n            <div class=\"task-info\">\n                <h4>".concat(titleInput.value, "</h4>\n                <p class=\"description\">").concat(descriptionInput.value, "</p>\n\n                <div class=\"time-status\">\n                    <p class=\"date\">\n                        <ion-icon name=\"time-outline\"></ion-icon>\n                        ").concat(dateInput.value, "\n                    </p>\n\n                    ").concat(status, "\n                </div>\n            </div>\n        </div>");
-    selected.remove();
-    resetForm();
-};
-// get difference between due date and current date
-var getDayDiff = function () {
-    var current = new Date().getTime();
-    var dueDate = new Date(dateInput.value).getTime();
-    var timeDiff = dueDate - current;
-    var dayDiff = timeDiff / (1000 * 3600 * 24);
-    return dayDiff;
+    new TaskHandler().markAsComplete(e);
 };

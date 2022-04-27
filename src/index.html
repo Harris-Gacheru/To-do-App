@@ -43,7 +43,7 @@
             </div>
             
             <div class="btn">
-                <button id="openForm">Add Task</button>
+                <button id="openForm" onclick="openModal()">Add Task</button>
             </div>
         </div>
 
@@ -74,8 +74,8 @@
         <!-- add task modal -->
         <div class="backdrop" id="modal">
             <div class="modal">
-                <div id="msg"></div>
-                <div id="close">close</div>
+                <div id="alert"></div>
+                <div id="close" onclick="closeModal()">close</div>
                 <h4>Add Task</h4>
 
                 <form id="addTaskForm">
