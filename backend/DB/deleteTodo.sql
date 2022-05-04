@@ -1,0 +1,7 @@
+CREATE OR ALTER PROCEDURE deleteTodo @id varchar(200)
+AS
+BEGIN
+
+DELETE FROM Todos WHERE id = @id
+
+END

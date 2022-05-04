@@ -1,0 +1,7 @@
+CREATE OR ALTER PROCEDURE getTodo @id varchar(200)
+AS
+BEGIN
+
+SELECT * FROM Todos WHERE id = @id
+
+END
