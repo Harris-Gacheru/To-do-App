@@ -2,11 +2,17 @@ import { RequestHandler } from "express"
 import mssql from 'mssql'
 import sqlConfig from "../Config/config"
 import { v1 as uid } from 'uuid'
+import { FormSchema } from "../Helper/formValidator"
 
 export const createTodo: RequestHandler = async(req, res) => {
     try {
         const id = uid()
         const { title, description, due_date } = req.body as { title: string, description: string, due_date: string }
+
+        // const { error } = FormSchema.validate(req.body)
+        // if (error) {
+        //     return res.json({Error: error.message})
+        // }
 
         let pool = await mssql.connect(sqlConfig)
         await pool.request()
@@ -26,8 +32,17 @@ export const getTodos: RequestHandler = async(req, res) => {
     try {
         let pool = await mssql.connect(sqlConfig)
         const todos = await pool.request().execute('getTodos')
-        res.json(todos.recordset)
-        console.log('Getting todos...')        
+        res.json(todos.recordset)     
+    } catch (error: any) {
+        res.json({Error: error.message})
+    }
+}
+
+export const getCompleteTodos: RequestHandler = async(req, res) => {
+    try {
+        let pool = await mssql.connect(sqlConfig)
+        const todos = await pool.request().execute('getCompletedTodos')
+        res.json(todos.recordset)       
     } catch (error: any) {
         res.json({Error: error.message})
     }
@@ -46,7 +61,6 @@ export const getTodo: RequestHandler<{id: string}> = async(req, res) => {
         }
 
         res.json(todo.recordset)
-        console.log('Getting todo...')
     } catch (error: any) {
         res.json({Error: error.message})
     }
@@ -58,6 +72,11 @@ export const updateTodo: RequestHandler<{id: string}> = async(req, res) => {
         let pool = await mssql.connect(sqlConfig)
         const { title, description, due_date } = req.body as { title: string, description: string, due_date: string }
         
+        // const { error } = FormSchema.validate(req.body)
+        // if (error) {
+        //     return res.json({Error: error.message})
+        // }
+
         const todo = await pool.request()
         .input('id', mssql.VarChar, id)
         .execute('getTodo')
@@ -73,7 +92,6 @@ export const updateTodo: RequestHandler<{id: string}> = async(req, res) => {
             .execute('updateTodo')
 
             res.json({message: 'Todo updated successfuly'})
-            console.log('Updating todo...')
         }
     } catch (error: any) {
         res.json({Error: error.message})
@@ -96,10 +114,33 @@ export const deleteTodo: RequestHandler<{id: string}> = async(req, res) => {
             .input('id', mssql.VarChar, id)
             .execute('deleteTodo')
 
-            res.json({message: `Todo was deleted successfully`})
-            console.log('Deleting todo...')
+            res.json({message: `Todo deleted successfully`})
         }
     } catch (error: any) {
         res.json({Error: error.message})
     }    
+}
+
+export const changeStatus: RequestHandler<{id: string}> = async (req, res) => {
+    try {
+        const id = req.params.id
+
+        let pool = await mssql.connect(sqlConfig)
+        const todo = await pool.request()
+        .input('id', mssql.VarChar, id)
+        .execute('getTodo')
+
+        if(!todo.recordset[0]){
+            res.json({message: `Todo with id ${id} does not exist`})
+        } else{
+            await pool.request()
+            .input('id', mssql.VarChar, id)
+            .execute('changeStatus')
+    
+            res.json({message: 'Task completed'})
+        }
+        
+    } catch (error: any) {
+        res.json({Error: error.message})
+    }
 }

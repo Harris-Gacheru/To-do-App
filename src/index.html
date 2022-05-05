@@ -17,32 +17,7 @@
                 <h3>ToDo List</h3>
             </div>
 
-            <div class="tasks" id="tasks">               
-                <!-- <div class="task">
-                    <input type="checkbox" id="checkbox">
-
-                    <div class="color"></div>
-                    <div class="task-info">
-                        <h4>Report</h4>
-                        <p class="description">Write week 4 training report</p>
-
-                        <div class="time-status">
-                            <p class="date">
-                                <ion-icon name="time-outline"></ion-icon>
-                                2022-04-28
-                            </p>
-
-                            <button id="done" onclick="markDone(this)">Mark as Done</button>
-                        </div>
-
-                        <div class="actions">
-                            <ion-icon name="create-outline" onClick="editTask(this)"></ion-icon>
-
-                            <ion-icon name="trash-outline"  onClick="deleteTask(this)"></ion-icon>
-                        </div>
-                    </div>
-                </div> -->
-            </div>
+            <div class="tasks" id="tasks"></div>
             
             <div class="btn">
                 <button id="openForm" onclick="openModal()">Add Task</button>
@@ -53,24 +28,7 @@
         <div class="completed-tasks" id="completed-tasks-container">
             <h4>Completed Tasks</h4>
 
-            <div id="completed-tasks">
-                <!-- <div class="task">
-                    <div class="color"></div>
-                    <div class="task-info">
-                        <h4>Title</h4>
-                        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla varius nibh magna, in aliquam lectus feugiat ut. Sed vel rhoncus nunc, vitae tempus sem.</p>
-
-                        <div class="time-status">
-                            <p class="date">
-                                <ion-icon name="time-outline"></ion-icon>
-                                2022-03-31
-                            </p>
-
-                            <p class="status">Status: <span>Time difference</span></p>
-                        </div>
-                    </div>
-                </div>                 -->
-            </div>
+            <div id="completed-tasks"></div>
         </div>
         
         <!-- add task modal -->
@@ -78,9 +36,10 @@
             <div class="modal">
                 <div id="alert"></div>
                 <div id="close" onclick="closeModal()">close</div>
-                <h4>Add Task</h4>
 
                 <form id="addTaskForm">
+                    <h4>Add Task</h4>
+
                     <div class="form-group">
                         <label for="title">Title: </label>
                         <input type="text" id="inputTitle">
@@ -97,6 +56,29 @@
                     </div>
 
                     <button id="addTask" type="submit">Add Task</button>
+                </form>
+
+                <form id="updateTaskForm">
+                    <h4>Update Task</h4>
+
+                    <div class="form-group">
+                        <label for="title">Title: </label>
+                        <input type="text" id="inputTitleUpdate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description: </label>
+                        <textarea name="description" id="inputDescriptionUpdate" cols="30" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Due Date: </label>
+                        <input type="date" id="inputDateUpdate">
+                    </div>
+
+                    <input type="text" id="todoid" hidden>
+
+                    <button id="updateTask" type="submit">Update Task</button>
                 </form>
             </div>
         </div>

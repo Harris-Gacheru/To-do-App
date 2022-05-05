@@ -4,11 +4,6 @@ class Task {
         this.description = description
         this.date = date
     }
-
-    display(){
-        let task = new TaskHandler
-        task.createTask(this.title, this.description, this.date)
-    }
 }
 
 
@@ -23,36 +18,9 @@ class TaskHandler {
         this.completedTasksMain = <HTMLDivElement>document.getElementById('completed-tasks-container')
         this.completedTasksDiv = <HTMLDivElement>document.getElementById('completed-tasks')
         this.todoAlertDiv = <HTMLDivElement>document.getElementById('todoAlert')
-    }
+    }    
 
-    createTask(title: string, description: string, date: string) {
-        this.tasksDivElement.innerHTML += 
-        `<div class="task">
-            <div class="color"></div>
-            <div class="task-info">
-                <h4>${title}</h4>
-                <p class="description">${description}</p>
-
-                <div class="time-status">
-                    <p class="date">
-                        <ion-icon name="time-outline"></ion-icon>
-                        ${date}
-                    </p>
-
-                    <button id="done" onclick="markDone(this)">Mark as Done</button>
-                </div>
-
-                <div class="actions">
-                    <ion-icon name="create-outline" onClick="editTask(this)"></ion-icon>
-
-                    <ion-icon name="trash-outline"  onClick="deleteTask(this)"></ion-icon>
-                </div>
-            </div>
-        </div>`
-    }
-    
-
-    getTasks() {
+    getUncompletedTasks() {
         fetch('http://localhost:7000/todo/', {
             method: 'GET'
         })
@@ -62,10 +30,7 @@ class TaskHandler {
                 let msg = `<p class='no-tasks'>No todo tasks available!</p>`
                 this.tasksDivElement.innerHTML = msg
             } else {
-                todos.map((todo: any) => {
-
-                    console.log(todo);
-                    
+                todos.map((todo: any) => {                    
                     this.tasksDivElement.innerHTML +=  
                     `<div class="task">
                         <div class="color"></div>
@@ -79,7 +44,7 @@ class TaskHandler {
                                     ${todo.due_date}
                                 </p>
             
-                                <button id="done" onclick="markDone(this)">Mark as Done</button>
+                                <button id="done" onclick="markDone('${todo.id}')">Mark as Done</button>
                             </div>
             
                             <div class="actions">
@@ -95,9 +60,45 @@ class TaskHandler {
         .catch(err => alert(err.message))
     }
 
+    getCompletedTasks() {
+        fetch('http://localhost:7000/todo/completed', {
+            method: 'GET'
+        })
+        .then((response) => response.json())
+        .then((todos) => {       
+            if (todos.length == 0) {
+                let msg = `<p class='no-tasks'>No completed tasks available!</p>`
+                this.completedTasksDiv.innerHTML = msg
+            } else {
+                todos.map((todo: any) => {                    
+                    this.completedTasksDiv.innerHTML +=  
+                    `<div class="task">
+                        <div class="color"></div>
+                        <div class="task-info">
+                            <h4>${todo.title}</h4>
+                            <p class="description">${todo.description}</p>
+            
+                            <div class="time-status">
+                                <p class="date">
+                                    <ion-icon name="time-outline"></ion-icon>
+                                    ${todo.due_date}
+                                </p>
+            
+                            </div>
+            
+                            <div class="actions">            
+                                <ion-icon name="trash-outline"  onClick="deleteTask('${todo.id}')"></ion-icon>
+                            </div>
+                        </div>
+                    </div>`               
+                })              
+            }
+        })
+        .catch(err => alert(err.message))
+    }
+
     deleteTask(id: string) {
-        let todoId = id
-        fetch(`http://localhost:7000/todo/${todoId}`, {
+        fetch(`http://localhost:7000/todo/${id}`, {
             method: 'DELETE'
         })
         .then(res => res.json())
@@ -117,69 +118,44 @@ class TaskHandler {
     }
 
     editTask(id: string){
-        let todoId = id
-
-        fetch(`http://localhost:7000/todo/${todoId}`)
-        .then(res => res.json())
-        .then(data => {
-            console.log(data[0].due_date)
-            
-            new ModalHandler().open()
-            new FormHandler().assign(data[0].title, data[0].description, data[0].due_date)
+        fetch(`http://localhost:7000/todo/${id}`, {
+            method: 'GET'
         })
-        
-        // let selectedTask = e.parentElement.parentElement.parentElement
+        .then(res => res.json())
+        .then((data) => {            
+            let modal = new ModalHandler()
+            modal.open()
+            modal.addTaskFormDisplay(false)
+            modal.updateTaskFormDisplay(true)
+            let form = new FormHandler()
+            form.updateInputs(data[0].title, data[0].description, data[0].due_date, data[0].id) 
 
-        // new ModalHandler().open()
-        // new FormHandler().assign(selectedTask.children[1].children[0].innerText, selectedTask.children[1].children[1].innerText, selectedTask.children[1].children[2].children[0].innerText)
-
-        // deleteTask(e)
-        
+            return id
+        }).catch((err) => {
+            console.log(err.message)            
+        });          
     }
 
-    markAsComplete(e : any) {
-        this.completedTasksMain.style.setProperty('display', 'block')
-        let selectedTask = e.parentElement.parentElement.parentElement
-        let date = selectedTask.children[1].children[2].children[0].innerText
-        let status: string
+    markAsComplete(id: string) {
+        fetch(`http://localhost:7000/todo/status/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-type': 'application/json'
+            }
+        })
+        .then(res =>  res.json())
+        .then(result => {
+            this.todoAlertDiv.innerText = result.message
+            this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
 
-        if ((this.getDayDiff(date) > 0) && (this.getDayDiff(date) < 1)) {
-
-            status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.ceil(this.getDayDiff(date))} day(s)</span></p>`
-                    
-        } else if(this.getDayDiff(date) < -1) {
-    
-            status = `<p class='status'>Status: <span class='late'>Task submitted late by ${Math.abs(Math.ceil(this.getDayDiff(date)))} day(s)</span></p>`
-                         
-        }else if(this.getDayDiff(date) > 0){
-    
-            status = `<p class='status'>Status: <span class='ontime'>Task completed earlier by ${Math.floor(this.getDayDiff(date))} day(s)</span></p>`
-    
-        }else {
-    
-            status = `<p class='status'>Status: <span class='ontime'>Task completed on time</span></p>`
-                    
-        }   
-        
-        this.completedTasksDiv.innerHTML += 
-        `<div class="task">
-            <div class="color"></div>
-            <div class="task-info">
-                <h4>${selectedTask.children[1].children[0].innerText}</h4>
-                <p class="description">${selectedTask.children[1].children[1].innerText}</p>
-
-                <div class="time-status">
-                    <p class="date">
-                        <ion-icon name="time-outline"></ion-icon>
-                        ${selectedTask.children[1].children[2].children[0].innerText}
-                    </p>
-
-                    ${status}
-                </div>
-            </div>
-        </div>`
-
-        selectedTask.remove()
+            setTimeout(() => {
+                location.reload()
+            }, 800);
+        })
+        .catch((err) => {  
+            this.todoAlertDiv.innerText = err.message
+            this.todoAlertDiv.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'          
+        })
     }
 
     getDayDiff(dueDate: string) {
@@ -193,19 +169,26 @@ class TaskHandler {
 }
 
 class FormHandler {
-
     titleInput: HTMLInputElement
     descriptionInput: HTMLTextAreaElement
     dateInput: HTMLInputElement
-    addTaskBtn: HTMLButtonElement
+    inputTitleUpdate: HTMLInputElement
+    inputDescriptionUpdate: HTMLTextAreaElement
+    inputDateUpdate: HTMLInputElement
     alert: HTMLDivElement
+    taskForm: HTMLFormElement
+    idInput: HTMLInputElement
 
     constructor() {
         this.titleInput = <HTMLInputElement>document.getElementById('inputTitle')
         this.descriptionInput = <HTMLTextAreaElement>document.getElementById('inputDescription')
-        this.dateInput = <HTMLInputElement>document.getElementById('inputDate')
-        this.addTaskBtn = <HTMLButtonElement>document.getElementById('addTask')       
+        this.dateInput = <HTMLInputElement>document.getElementById('inputDate') 
+        this.inputTitleUpdate = <HTMLInputElement>document.getElementById('inputTitleUpdate')
+        this.inputDescriptionUpdate = <HTMLTextAreaElement>document.getElementById('inputDescriptionUpdate')
+        this.inputDateUpdate = <HTMLInputElement>document.getElementById('inputDateUpdate')      
         this.alert = <HTMLDivElement>document.getElementById('alert') 
+        this.taskForm = <HTMLFormElement> document.getElementById('addTaskForm')
+        this.idInput = <HTMLInputElement>document.getElementById('todoid')
     }
 
     validation(){
@@ -217,21 +200,65 @@ class FormHandler {
     }
 
     submit() {
-        fetch('http://localhost:7000/todo/create', {
-            method: 'POST',
-            mode: 'cors',
+        if (this.validation()) {
+            fetch('http://localhost:7000/todo/create', {
+                method: 'POST',
+                mode: 'cors',
+                body: JSON.stringify({
+                    title: this.titleInput.value,
+                    description: this.descriptionInput.value,
+                    due_date: this.dateInput.value
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(msg => {
+                console.log(msg.message)
+                
+                this.alert.innerText = msg.message
+                this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
+
+                setTimeout(() => {
+                    this.reset()
+                    new ModalHandler().close()
+                    location.reload()
+                }, 800);
+            })
+            .catch(err => {
+                this.alert.innerText = err.message
+                this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'      
+            })
+        } else {
+            this.alert.innerText = 'Fill in all details'
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px' 
+        }
+        
+        
+    }
+
+    updateInputs(title: string, description: string, date: string, id:string) {
+        this.inputTitleUpdate.value = title
+        this.inputDescriptionUpdate.value = description
+        this.inputDateUpdate.value = date
+        this.idInput.value = id
+    }
+
+    updateTodo() {
+        fetch(`http://localhost:7000/todo/${this.idInput.value}`, {
+            method: 'PATCH',
             body: JSON.stringify({
-                title: this.titleInput.value,
-                description: this.descriptionInput.value,
-                due_date: this.dateInput.value
+                title: this.inputTitleUpdate.value,
+                description: this.inputDescriptionUpdate.value,
+                due_date: this.inputDateUpdate.value
             }),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-type': 'application/json'
             }
         })
         .then(res => res.json())
         .then(msg => {
-            console.log(msg)
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
 
@@ -243,9 +270,8 @@ class FormHandler {
         })
         .catch(err => {
             this.alert.innerText = err.message
-            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'      
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'  
         })
-        
     }
 
     reset() {
@@ -264,10 +290,14 @@ class FormHandler {
 }
 
 class ModalHandler {
-    modal: HTMLDivElement
+    modal: HTMLDivElement    
+    addTaskForm: HTMLFormElement
+    updateTaskForm: HTMLFormElement
 
     constructor() {
-        this.modal = <HTMLDivElement>document.getElementById('modal')
+        this.modal = <HTMLDivElement>document.getElementById('modal')        
+        this.addTaskForm = <HTMLFormElement>document.getElementById('addTaskForm')
+        this.updateTaskForm = <HTMLFormElement>document.getElementById('updateTaskForm')
     }
 
     open(){
@@ -279,11 +309,30 @@ class ModalHandler {
         this.modal.style.setProperty('visibility', 'hidden')
         new FormHandler().reset()
     }
+
+    addTaskFormDisplay(display: boolean) {      
+        if (display === true) {
+            this.addTaskForm.style.setProperty('display', 'block')  
+        }  else{
+            this.addTaskForm.style.setProperty('display', 'none')  
+        }
+    }
+
+    updateTaskFormDisplay(display: boolean) {
+        if (display) {
+            this.updateTaskForm.style.setProperty('display', 'block') 
+        }  else{
+            this.updateTaskForm.style.setProperty('display', 'none') 
+        }
+    }
 }
 
 // open modal
 let openModal = () => {
-    new ModalHandler().open()
+    let modal: any = new ModalHandler()
+    modal.open()
+    modal.updateTaskFormDisplay(false)
+    modal.addTaskFormDisplay(true)
 }
 
 // close modal
@@ -291,13 +340,23 @@ let closeModal = () => {
     new ModalHandler().close()
 }
 
-// onsubmit
-document.getElementById('modal')?.addEventListener('submit', (e: Event) => {
+// add task
+document.getElementById('addTaskForm')?.addEventListener('submit', (e: Event) => {
     e.preventDefault()
     new FormHandler().submit()
 })
-// get Task
-new TaskHandler().getTasks()
+
+// update task
+document.getElementById('updateTaskForm')?.addEventListener('submit', (e) => {
+    e.preventDefault()
+    new FormHandler().updateTodo()    
+})
+
+// get completed Task
+new TaskHandler().getUncompletedTasks()
+
+// get uncompleted tasks
+new TaskHandler().getCompletedTasks()
 
 // delete
 let deleteTask = (id: string) => {
@@ -310,6 +369,6 @@ let editTask = (id: string) => {
 }
 
 // mark as complete
-let markDone = (e: Event) => {
-    new TaskHandler().markAsComplete(e)
+let markDone = (id: string) => {
+    new TaskHandler().markAsComplete(id)
 }
