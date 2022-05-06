@@ -9,10 +9,10 @@ export const createTodo: RequestHandler = async(req, res) => {
         const id = uid()
         const { title, description, due_date } = req.body as { title: string, description: string, due_date: string }
 
-        // const { error } = FormSchema.validate(req.body)
-        // if (error) {
-        //     return res.json({Error: error.message})
-        // }
+        const { error } = FormSchema.validate(req.body)
+        if (error) {
+            return res.json({Error: error.message})
+        }
 
         let pool = await mssql.connect(sqlConfig)
         await pool.request()
@@ -72,10 +72,10 @@ export const updateTodo: RequestHandler<{id: string}> = async(req, res) => {
         let pool = await mssql.connect(sqlConfig)
         const { title, description, due_date } = req.body as { title: string, description: string, due_date: string }
         
-        // const { error } = FormSchema.validate(req.body)
-        // if (error) {
-        //     return res.json({Error: error.message})
-        // }
+        const { error } = FormSchema.validate(req.body)
+        if (error) {
+            return res.json({Error: error.message})
+        }
 
         const todo = await pool.request()
         .input('id', mssql.VarChar, id)

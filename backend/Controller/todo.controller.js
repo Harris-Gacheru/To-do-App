@@ -16,14 +16,15 @@ exports.changeStatus = exports.deleteTodo = exports.updateTodo = exports.getTodo
 const mssql_1 = __importDefault(require("mssql"));
 const config_1 = __importDefault(require("../Config/config"));
 const uuid_1 = require("uuid");
+const formValidator_1 = require("../Helper/formValidator");
 const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = (0, uuid_1.v1)();
         const { title, description, due_date } = req.body;
-        // const { error } = FormSchema.validate(req.body)
-        // if (error) {
-        //     return res.json({Error: error.message})
-        // }
+        const { error } = formValidator_1.FormSchema.validate(req.body);
+        if (error) {
+            return res.json({ Error: error.message });
+        }
         let pool = yield mssql_1.default.connect(config_1.default);
         yield pool.request()
             .input('id', mssql_1.default.VarChar, id)
@@ -82,10 +83,10 @@ const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const id = req.params.id;
         let pool = yield mssql_1.default.connect(config_1.default);
         const { title, description, due_date } = req.body;
-        // const { error } = FormSchema.validate(req.body)
-        // if (error) {
-        //     return res.json({Error: error.message})
-        // }
+        const { error } = formValidator_1.FormSchema.validate(req.body);
+        if (error) {
+            return res.json({ Error: error.message });
+        }
         const todo = yield pool.request()
             .input('id', mssql_1.default.VarChar, id)
             .execute('getTodo');

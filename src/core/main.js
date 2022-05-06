@@ -1,15 +1,4 @@
 var _a, _b;
-var Task = /** @class */ (function () {
-    function Task(title, description, date) {
-        this.title = title;
-        this.description = description;
-        this.date = date;
-        this.title = title;
-        this.description = description;
-        this.date = date;
-    }
-    return Task;
-}());
 var TaskHandler = /** @class */ (function () {
     function TaskHandler() {
         this.tasksDivElement = document.getElementById('tasks');
@@ -49,8 +38,19 @@ var TaskHandler = /** @class */ (function () {
             }
             else {
                 todos.map(function (todo) {
+                    var p;
+                    var difference = todo.hourDifference / 24;
+                    if (difference > 0) {
+                        p = "<p class='early date'>Completed early by ".concat(difference, " day(s)</p>");
+                    }
+                    else if (difference == 0) {
+                        p = "<p class='early date'>Completed on time </p>";
+                    }
+                    else {
+                        p = "<p class='late date'>Completed late by ".concat(Math.abs(difference), " day(s) </p>");
+                    }
                     _this.completedTasksDiv.innerHTML +=
-                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <p class=\"date\">\n                                    <ion-icon name=\"time-outline\"></ion-icon>\n                                    ").concat(todo.due_date, "\n                                </p>\n            \n                            </div>\n            \n                            <div class=\"actions\">            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
+                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <p class=\"date\">\n                                    Due Date:  ").concat(todo.due_date, "\n                                </p>\n                                <p class=\"date\">\n                                    Completion Date:  ").concat(todo.completed_at, "\n                                </p>\n                                ").concat(p, "\n                            </div>\n            \n                            <div class=\"actions\">            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
                 });
             }
         })["catch"](function (err) { return alert(err.message); });
@@ -62,7 +62,6 @@ var TaskHandler = /** @class */ (function () {
         })
             .then(function (res) { return res.json(); })
             .then(function (result) {
-            console.log(result.message);
             _this.todoAlertDiv.innerText = result.message;
             _this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
@@ -111,13 +110,6 @@ var TaskHandler = /** @class */ (function () {
             _this.todoAlertDiv.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
     };
-    TaskHandler.prototype.getDayDiff = function (dueDate) {
-        var currentDate = new Date();
-        var due = new Date(dueDate);
-        var timeDiff = due.getTime() - currentDate.getTime();
-        var dayDiff = timeDiff / (1000 * 3600 * 24);
-        return dayDiff;
-    };
     return TaskHandler;
 }());
 var FormHandler = /** @class */ (function () {
@@ -132,69 +124,28 @@ var FormHandler = /** @class */ (function () {
         this.taskForm = document.getElementById('addTaskForm');
         this.idInput = document.getElementById('todoid');
     }
-    FormHandler.prototype.validation = function () {
-        if ((this.titleInput.value === '') || (this.descriptionInput.value === '') || (this.dateInput.value === '')) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    };
     FormHandler.prototype.submit = function () {
         var _this = this;
-        if (this.validation()) {
+        new Promise(function (resolve, reject) {
             fetch('http://localhost:7000/todo/create', {
                 method: 'POST',
-                mode: 'cors',
                 body: JSON.stringify({
-                    title: this.titleInput.value,
-                    description: this.descriptionInput.value,
-                    due_date: this.dateInput.value
+                    title: _this.titleInput.value,
+                    description: _this.descriptionInput.value,
+                    due_date: _this.dateInput.value
                 }),
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-type': 'application/json'
                 }
             })
                 .then(function (res) { return res.json(); })
-                .then(function (msg) {
-                console.log(msg.message);
-                _this.alert.innerText = msg.message;
-                _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
-                setTimeout(function () {
-                    _this.reset();
-                    new ModalHandler().close();
-                    location.reload();
-                }, 800);
-            })["catch"](function (err) {
-                _this.alert.innerText = err.message;
-                _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
-            });
-        }
-        else {
-            this.alert.innerText = 'Fill in all details';
-            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
-        }
-    };
-    FormHandler.prototype.updateInputs = function (title, description, date, id) {
-        this.inputTitleUpdate.value = title;
-        this.inputDescriptionUpdate.value = description;
-        this.inputDateUpdate.value = date;
-        this.idInput.value = id;
-    };
-    FormHandler.prototype.updateTodo = function () {
-        var _this = this;
-        fetch("http://localhost:7000/todo/".concat(this.idInput.value), {
-            method: 'PATCH',
-            body: JSON.stringify({
-                title: this.inputTitleUpdate.value,
-                description: this.inputDescriptionUpdate.value,
-                due_date: this.inputDateUpdate.value
-            }),
-            headers: {
-                'Content-type': 'application/json'
-            }
+                .then(function (data) {
+                if (data.Error) {
+                    return reject(data.Error);
+                }
+                resolve(data);
+            })["catch"](function (err) { return reject(err); });
         })
-            .then(function (res) { return res.json(); })
             .then(function (msg) {
             _this.alert.innerText = msg.message;
             _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
@@ -204,7 +155,48 @@ var FormHandler = /** @class */ (function () {
                 location.reload();
             }, 800);
         })["catch"](function (err) {
-            _this.alert.innerText = err.message;
+            _this.alert.innerText = err;
+            _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
+        });
+    };
+    FormHandler.prototype.updateInputs = function (title, description, date, id) {
+        this.inputTitleUpdate.value = title;
+        this.inputDescriptionUpdate.value = description;
+        this.inputDateUpdate.value = date;
+        this.idInput.value = id;
+    };
+    FormHandler.prototype.updateTodo = function () {
+        var _this = this;
+        new Promise(function (resolve, reject) {
+            fetch("http://localhost:7000/todo/".concat(_this.idInput.value), {
+                method: 'PATCH',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: _this.inputTitleUpdate.value,
+                    description: _this.inputDescriptionUpdate.value,
+                    due_date: _this.inputDateUpdate.value
+                })
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (result) {
+                if (result.Error) {
+                    return reject(result.Error);
+                }
+                resolve(result);
+            })["catch"](function (err) { return reject(err); });
+        })
+            .then(function (msg) {
+            _this.alert.innerText = msg.message;
+            _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
+            setTimeout(function () {
+                _this.reset();
+                new ModalHandler().close();
+                location.reload();
+            }, 800);
+        })["catch"](function (err) {
+            _this.alert.innerText = err;
             _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
     };

@@ -1,12 +1,3 @@
-class Task {
-    constructor (public title: string, public description: string, public date: string){
-        this.title = title
-        this.description = description
-        this.date = date
-    }
-}
-
-
 class TaskHandler {
     tasksDivElement: HTMLDivElement
     completedTasksMain: HTMLDivElement
@@ -70,7 +61,17 @@ class TaskHandler {
                 let msg = `<p class='no-tasks'>No completed tasks available!</p>`
                 this.completedTasksDiv.innerHTML = msg
             } else {
-                todos.map((todo: any) => {                    
+                todos.map((todo: any) => {
+                    let p: string
+                    let difference: number = todo.hourDifference/ 24
+                    
+                    if(difference > 0){
+                        p = `<p class='early date'>Completed early by ${difference} day(s)</p>`                        
+                    }  else if(difference == 0) {
+                        p = `<p class='early date'>Completed on time </p>` 
+                    }   else {
+                        p = `<p class='late date'>Completed late by ${Math.abs(difference)} day(s) </p>`
+                    }           
                     this.completedTasksDiv.innerHTML +=  
                     `<div class="task">
                         <div class="color"></div>
@@ -80,10 +81,12 @@ class TaskHandler {
             
                             <div class="time-status">
                                 <p class="date">
-                                    <ion-icon name="time-outline"></ion-icon>
-                                    ${todo.due_date}
+                                    Due Date:  ${todo.due_date}
                                 </p>
-            
+                                <p class="date">
+                                    Completion Date:  ${todo.completed_at}
+                                </p>
+                                ${p}
                             </div>
             
                             <div class="actions">            
@@ -103,7 +106,6 @@ class TaskHandler {
         })
         .then(res => res.json())
         .then((result) => {
-            console.log(result.message)
             this.todoAlertDiv.innerText = result.message
             this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
             
@@ -157,15 +159,6 @@ class TaskHandler {
             this.todoAlertDiv.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'          
         })
     }
-
-    getDayDiff(dueDate: string) {
-        let currentDate = new Date()
-        let due = new Date(dueDate)
-        let timeDiff = due.getTime() - currentDate.getTime()
-        let dayDiff = timeDiff/ (1000 * 3600 * 24)
-
-        return dayDiff
-    }
 }
 
 class FormHandler {
@@ -191,51 +184,43 @@ class FormHandler {
         this.idInput = <HTMLInputElement>document.getElementById('todoid')
     }
 
-    validation(){
-        if ((this.titleInput.value === '') || (this.descriptionInput.value === '') || (this.dateInput.value === '')) {
-            return false
-        }else{
-            return true
-        }
-    }
-
     submit() {
-        if (this.validation()) {
-            fetch('http://localhost:7000/todo/create', {
+        new Promise<{message: string, Error: string}> ((resolve, reject) => {
+            fetch('http://localhost:7000/todo/create', 
+            {
                 method: 'POST',
-                mode: 'cors',
                 body: JSON.stringify({
                     title: this.titleInput.value,
                     description: this.descriptionInput.value,
                     due_date: this.dateInput.value
                 }),
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-type': 'application/json'
                 }
             })
             .then(res => res.json())
-            .then(msg => {
-                console.log(msg.message)
-                
-                this.alert.innerText = msg.message
-                this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
-
-                setTimeout(() => {
-                    this.reset()
-                    new ModalHandler().close()
-                    location.reload()
-                }, 800);
+            .then(data => {
+                if (data.Error) {
+                    return reject(data.Error)
+                }
+                resolve(data)
             })
-            .catch(err => {
-                this.alert.innerText = err.message
-                this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'      
-            })
-        } else {
-            this.alert.innerText = 'Fill in all details'
-            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px' 
-        }
-        
-        
+            .catch(err => reject(err))
+        })
+        .then(msg => {
+            this.alert.innerText = msg.message
+            this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
+            
+            setTimeout(() => {
+                this.reset()
+                new ModalHandler().close()
+                location.reload()
+            }, 800);
+        })
+        .catch(err => {
+            this.alert.innerText = err
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
+        })
     }
 
     updateInputs(title: string, description: string, date: string, id:string) {
@@ -246,22 +231,31 @@ class FormHandler {
     }
 
     updateTodo() {
-        fetch(`http://localhost:7000/todo/${this.idInput.value}`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                title: this.inputTitleUpdate.value,
-                description: this.inputDescriptionUpdate.value,
-                due_date: this.inputDateUpdate.value
-            }),
-            headers: {
-                'Content-type': 'application/json'
-            }
+        new Promise<{message: string, Error: string}>((resolve, reject) => {
+            fetch(`http://localhost:7000/todo/${this.idInput.value}`,
+            {
+                method: 'PATCH',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: this.inputTitleUpdate.value,
+                    description: this.inputDescriptionUpdate.value,
+                    due_date: this.inputDateUpdate.value
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.Error) {
+                    return reject(result.Error)
+                }
+                resolve(result)
+            })
+            .catch(err => reject(err))
         })
-        .then(res => res.json())
         .then(msg => {
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
-
             setTimeout(() => {
                 this.reset()
                 new ModalHandler().close()
@@ -269,8 +263,8 @@ class FormHandler {
             }, 800);
         })
         .catch(err => {
-            this.alert.innerText = err.message
-            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'  
+            this.alert.innerText = err
+            this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
         })
     }
 
