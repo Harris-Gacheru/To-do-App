@@ -17,10 +17,11 @@ const mssql_1 = __importDefault(require("mssql"));
 const config_1 = __importDefault(require("../Config/config"));
 const uuid_1 = require("uuid");
 const formValidator_1 = require("../Helper/formValidator");
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = (0, uuid_1.v1)();
-        const { title, description, due_date } = req.body;
+        const { title, description, due_date, assigned_to } = req.body;
         const { error } = formValidator_1.FormSchema.validate(req.body);
         if (error) {
             return res.json({ Error: error.message });
@@ -31,8 +32,26 @@ const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             .input('title', mssql_1.default.VarChar, title)
             .input('description', mssql_1.default.VarChar, description)
             .input('due_date', mssql_1.default.VarChar, due_date)
+            .input('assigned_to', mssql_1.default.VarChar, assigned_to)
             .execute('createTodo');
-        res.json({ message: 'Todo created successfully' });
+        try {
+            let transporter = nodemailer_1.default.createTransport({ port: 587, host: 'smtp.gmail.com', secure: false, requireTLS: true, auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS } });
+            yield transporter.sendMail({
+                from: process.env.EMAIL,
+                to: assigned_to,
+                subject: 'New Task Assigned',
+                text: 'Task assignment',
+                html: `<p>Hello, </p>
+                <p>You have been assigned a new task. Task details are as follows: </p>
+                <p><span style="font-weight: bold;">Title: </span>${title}</p>
+                <p><span style="font-weight: bold;">Description: </span>${description}</p>
+                <p style="font-weight: bold;"><span>Due date: </span>${due_date}</p>`
+            });
+            res.json({ message: 'Todo created and assigned successfully' });
+        }
+        catch (error) {
+            res.json({ Error: error });
+        }
     }
     catch (error) {
         res.json({ Error: error.message });
@@ -82,7 +101,7 @@ const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const id = req.params.id;
         let pool = yield mssql_1.default.connect(config_1.default);
-        const { title, description, due_date } = req.body;
+        const { title, description, due_date, assigned_to } = req.body;
         const { error } = formValidator_1.FormSchema.validate(req.body);
         if (error) {
             return res.json({ Error: error.message });
@@ -99,6 +118,7 @@ const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 .input('title', mssql_1.default.VarChar, title)
                 .input('description', mssql_1.default.VarChar, description)
                 .input('due_date', mssql_1.default.VarChar, due_date)
+                .input('assigned_to', mssql_1.default.VarChar, assigned_to)
                 .execute('updateTodo');
             res.json({ message: 'Todo updated successfuly' });
         }
@@ -144,7 +164,27 @@ const changeStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             yield pool.request()
                 .input('id', mssql_1.default.VarChar, id)
                 .execute('changeStatus');
-            res.json({ message: 'Task completed' });
+            try {
+                let assignedUser = yield pool.request()
+                    .query(`SELECT assigned_to, title, completed_at FROM Todos Where id = '${id}'`);
+                let email = assignedUser.recordset[0].assigned_to;
+                let title = assignedUser.recordset[0].title;
+                let completed_at = assignedUser.recordset[0].completed_at;
+                let transporter = nodemailer_1.default.createTransport({ port: 587, host: 'smtp.gmail.com', secure: false, requireTLS: true, auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS } });
+                yield transporter.sendMail({
+                    from: email,
+                    to: process.env.EMAIL,
+                    subject: 'Task Completed',
+                    text: 'Task Completed',
+                    html: `<p>Hello, </p>
+                    <p>The task with the title: ${title} assigned to ${email} has been completed successfully on ${new Date(completed_at)}</p>`
+                });
+                res.json({ message: 'Todo completed successfully' });
+            }
+            catch (error) {
+                res.json({ Error: error });
+            }
+            // res.json({message: 'Task completed'})
         }
     }
     catch (error) {

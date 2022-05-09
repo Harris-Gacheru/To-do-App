@@ -125,6 +125,15 @@ html{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin: 10px 0;
+}
+
+.task .task-info .time-status .date-user{
+    font-size: 14px;
+}
+
+.task .task-info .time-status .date-user p{
+    margin: 2px 0;
 }
 
 .task .task-info .date{
@@ -197,9 +206,13 @@ html{
 }
 
 .completed-tasks #completed-tasks .task .task-info .time-status{
-    flex-direction: column;
     font-size: 14px;
     margin-bottom: 10px;
+    align-items: flex-end;
+}
+
+.completed-tasks #completed-tasks .task .task-info .time-status .done-by span{
+    font-weight: bold;
 }
 
 .completed-tasks #completed-tasks .task .task-info .time-status .date{

@@ -30,10 +30,16 @@ class TaskHandler {
                             <p class="description">${todo.description}</p>
             
                             <div class="time-status">
-                                <p class="date">
-                                    <ion-icon name="time-outline"></ion-icon>
-                                    ${todo.due_date}
-                                </p>
+                                <div class="date-user">
+                                    <p class="date">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        ${todo.due_date}
+                                    </p>
+
+                                    <p class="date">
+                                        Assigned To: ${todo.assigned_to}
+                                    </p>
+                                </div>
             
                                 <button id="done" onclick="markDone('${todo.id}')">Mark as Done</button>
                             </div>
@@ -80,13 +86,16 @@ class TaskHandler {
                             <p class="description">${todo.description}</p>
             
                             <div class="time-status">
-                                <p class="date">
-                                    Due Date:  ${todo.due_date}
-                                </p>
-                                <p class="date">
-                                    Completion Date:  ${todo.completed_at}
-                                </p>
-                                ${p}
+                                <div>
+                                    <p class="date">
+                                        Due Date:  ${todo.due_date}
+                                    </p>
+                                    <p class="date">
+                                        Completion Date:  ${todo.completed_at}
+                                    </p>
+                                    ${p}
+                                </div>
+                                <p class="done-by"><span>Task done by:</span> ${todo.assigned_to}</p>
                             </div>
             
                             <div class="actions">            
@@ -130,7 +139,7 @@ class TaskHandler {
             modal.addTaskFormDisplay(false)
             modal.updateTaskFormDisplay(true)
             let form = new FormHandler()
-            form.updateInputs(data[0].title, data[0].description, data[0].due_date, data[0].id) 
+            form.updateInputs(data[0].title, data[0].description, data[0].due_date,data[0].assigned_to, data[0].id) 
 
             return id
         }).catch((err) => {
@@ -165,9 +174,11 @@ class FormHandler {
     titleInput: HTMLInputElement
     descriptionInput: HTMLTextAreaElement
     dateInput: HTMLInputElement
+    assignedToInput: HTMLInputElement
     inputTitleUpdate: HTMLInputElement
     inputDescriptionUpdate: HTMLTextAreaElement
     inputDateUpdate: HTMLInputElement
+    inputAssignedToUpdate:HTMLInputElement
     alert: HTMLDivElement
     taskForm: HTMLFormElement
     idInput: HTMLInputElement
@@ -176,9 +187,11 @@ class FormHandler {
         this.titleInput = <HTMLInputElement>document.getElementById('inputTitle')
         this.descriptionInput = <HTMLTextAreaElement>document.getElementById('inputDescription')
         this.dateInput = <HTMLInputElement>document.getElementById('inputDate') 
+        this.assignedToInput = <HTMLInputElement>document.getElementById('inputAssignedTo') 
         this.inputTitleUpdate = <HTMLInputElement>document.getElementById('inputTitleUpdate')
         this.inputDescriptionUpdate = <HTMLTextAreaElement>document.getElementById('inputDescriptionUpdate')
-        this.inputDateUpdate = <HTMLInputElement>document.getElementById('inputDateUpdate')      
+        this.inputDateUpdate = <HTMLInputElement>document.getElementById('inputDateUpdate')    
+        this.inputAssignedToUpdate = <HTMLInputElement>document.getElementById('inputAssignedToUpdate')    
         this.alert = <HTMLDivElement>document.getElementById('alert') 
         this.taskForm = <HTMLFormElement> document.getElementById('addTaskForm')
         this.idInput = <HTMLInputElement>document.getElementById('todoid')
@@ -192,7 +205,8 @@ class FormHandler {
                 body: JSON.stringify({
                     title: this.titleInput.value,
                     description: this.descriptionInput.value,
-                    due_date: this.dateInput.value
+                    due_date: this.dateInput.value,
+                    assigned_to: this.assignedToInput.value
                 }),
                 headers: {
                     'Content-type': 'application/json'
@@ -223,10 +237,11 @@ class FormHandler {
         })
     }
 
-    updateInputs(title: string, description: string, date: string, id:string) {
+    updateInputs(title: string, description: string, date: string, assigned_to: string, id:string) {
         this.inputTitleUpdate.value = title
         this.inputDescriptionUpdate.value = description
         this.inputDateUpdate.value = date
+        this.inputAssignedToUpdate.value = assigned_to
         this.idInput.value = id
     }
 
@@ -241,7 +256,8 @@ class FormHandler {
                 body: JSON.stringify({
                     title: this.inputTitleUpdate.value,
                     description: this.inputDescriptionUpdate.value,
-                    due_date: this.inputDateUpdate.value
+                    due_date: this.inputDateUpdate.value,
+                    assigned_to: this.inputAssignedToUpdate.value
                 })
             })
             .then(res => res.json())

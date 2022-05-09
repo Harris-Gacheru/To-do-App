@@ -20,7 +20,7 @@ var TaskHandler = /** @class */ (function () {
             else {
                 todos.map(function (todo) {
                     _this.tasksDivElement.innerHTML +=
-                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <p class=\"date\">\n                                    <ion-icon name=\"time-outline\"></ion-icon>\n                                    ").concat(todo.due_date, "\n                                </p>\n            \n                                <button id=\"done\" onclick=\"markDone('").concat(todo.id, "')\">Mark as Done</button>\n                            </div>\n            \n                            <div class=\"actions\">\n                                <ion-icon name=\"create-outline\" onClick=\"editTask('").concat(todo.id, "')\"></ion-icon>\n            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
+                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <div class=\"date-user\">\n                                    <p class=\"date\">\n                                        <ion-icon name=\"time-outline\"></ion-icon>\n                                        ").concat(todo.due_date, "\n                                    </p>\n\n                                    <p class=\"date\">\n                                        Assigned To: ").concat(todo.assigned_to, "\n                                    </p>\n                                </div>\n            \n                                <button id=\"done\" onclick=\"markDone('").concat(todo.id, "')\">Mark as Done</button>\n                            </div>\n            \n                            <div class=\"actions\">\n                                <ion-icon name=\"create-outline\" onClick=\"editTask('").concat(todo.id, "')\"></ion-icon>\n            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
                 });
             }
         })["catch"](function (err) { return alert(err.message); });
@@ -50,7 +50,7 @@ var TaskHandler = /** @class */ (function () {
                         p = "<p class='late date'>Completed late by ".concat(Math.abs(difference), " day(s) </p>");
                     }
                     _this.completedTasksDiv.innerHTML +=
-                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <p class=\"date\">\n                                    Due Date:  ").concat(todo.due_date, "\n                                </p>\n                                <p class=\"date\">\n                                    Completion Date:  ").concat(todo.completed_at, "\n                                </p>\n                                ").concat(p, "\n                            </div>\n            \n                            <div class=\"actions\">            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
+                        "<div class=\"task\">\n                        <div class=\"color\"></div>\n                        <div class=\"task-info\">\n                            <h4>".concat(todo.title, "</h4>\n                            <p class=\"description\">").concat(todo.description, "</p>\n            \n                            <div class=\"time-status\">\n                                <div>\n                                    <p class=\"date\">\n                                        Due Date:  ").concat(todo.due_date, "\n                                    </p>\n                                    <p class=\"date\">\n                                        Completion Date:  ").concat(todo.completed_at, "\n                                    </p>\n                                    ").concat(p, "\n                                </div>\n                                <p class=\"done-by\"><span>Task done by:</span> ").concat(todo.assigned_to, "</p>\n                            </div>\n            \n                            <div class=\"actions\">            \n                                <ion-icon name=\"trash-outline\"  onClick=\"deleteTask('").concat(todo.id, "')\"></ion-icon>\n                            </div>\n                        </div>\n                    </div>");
                 });
             }
         })["catch"](function (err) { return alert(err.message); });
@@ -84,7 +84,7 @@ var TaskHandler = /** @class */ (function () {
             modal.addTaskFormDisplay(false);
             modal.updateTaskFormDisplay(true);
             var form = new FormHandler();
-            form.updateInputs(data[0].title, data[0].description, data[0].due_date, data[0].id);
+            form.updateInputs(data[0].title, data[0].description, data[0].due_date, data[0].assigned_to, data[0].id);
             return id;
         })["catch"](function (err) {
             console.log(err.message);
@@ -117,9 +117,11 @@ var FormHandler = /** @class */ (function () {
         this.titleInput = document.getElementById('inputTitle');
         this.descriptionInput = document.getElementById('inputDescription');
         this.dateInput = document.getElementById('inputDate');
+        this.assignedToInput = document.getElementById('inputAssignedTo');
         this.inputTitleUpdate = document.getElementById('inputTitleUpdate');
         this.inputDescriptionUpdate = document.getElementById('inputDescriptionUpdate');
         this.inputDateUpdate = document.getElementById('inputDateUpdate');
+        this.inputAssignedToUpdate = document.getElementById('inputAssignedToUpdate');
         this.alert = document.getElementById('alert');
         this.taskForm = document.getElementById('addTaskForm');
         this.idInput = document.getElementById('todoid');
@@ -132,7 +134,8 @@ var FormHandler = /** @class */ (function () {
                 body: JSON.stringify({
                     title: _this.titleInput.value,
                     description: _this.descriptionInput.value,
-                    due_date: _this.dateInput.value
+                    due_date: _this.dateInput.value,
+                    assigned_to: _this.assignedToInput.value
                 }),
                 headers: {
                     'Content-type': 'application/json'
@@ -159,10 +162,11 @@ var FormHandler = /** @class */ (function () {
             _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
     };
-    FormHandler.prototype.updateInputs = function (title, description, date, id) {
+    FormHandler.prototype.updateInputs = function (title, description, date, assigned_to, id) {
         this.inputTitleUpdate.value = title;
         this.inputDescriptionUpdate.value = description;
         this.inputDateUpdate.value = date;
+        this.inputAssignedToUpdate.value = assigned_to;
         this.idInput.value = id;
     };
     FormHandler.prototype.updateTodo = function () {
@@ -176,7 +180,8 @@ var FormHandler = /** @class */ (function () {
                 body: JSON.stringify({
                     title: _this.inputTitleUpdate.value,
                     description: _this.inputDescriptionUpdate.value,
-                    due_date: _this.inputDateUpdate.value
+                    due_date: _this.inputDateUpdate.value,
+                    assigned_to: _this.inputAssignedToUpdate.value
                 })
             })
                 .then(function (res) { return res.json(); })
