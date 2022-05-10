@@ -30,7 +30,7 @@
 
             <div id="completed-tasks"></div>
         </div>
-        
+
         <!-- add task modal -->
         <div class="backdrop" id="modal">
             <div class="modal">
@@ -83,7 +83,7 @@
 
                     <div class="form-group">
                         <label for="email">Assigned to: </label>
-                        <input type="email" id="inputAssignedToUpdate">
+                        <input type="email" id="inputAssignedToUpdate" readonly style="background-color: #f4f4f4;">
                     </div>
 
                     <input type="text" id="todoid" hidden>
@@ -93,6 +93,9 @@
             </div>
         </div>
     </div>
+
+    <!-- spinner -->
+    <div class="spinner" id="spinner"></div>
 
     <script src="./core/main.js"></script>
     <!-- ionicons -->

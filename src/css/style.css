@@ -10,6 +10,10 @@ html{
     height: 100vh;
 }
 
+body {
+    position: relative;
+}
+
 *{
     padding: 0;
     margin: 0;
@@ -31,7 +35,7 @@ html{
 }
 
 .todo{
-    width: 45vw;
+    width: 40vw;
     height: 420px;
     background-color: #fff;
     box-shadow: 1px 1px 6px #888888;
@@ -167,7 +171,7 @@ html{
 
 /* completed task */
 .completed-tasks{
-    width: 45vw;
+    width: 40vw;
     height: 420px;
     padding-top: 10px;
     display: flex;
@@ -246,7 +250,7 @@ html{
 .modal{
     background-color: #fff;
     padding: 20px 25px;
-    z-index: 10;
+    z-index: 2;
     position: relative;
 }
 
@@ -313,4 +317,24 @@ html{
 
 .modal form button:hover{
     background-color: var(--dark-blue);
+}
+
+/* spinner */
+.spinner {
+    width: 100px;
+    height: 100px;
+    border: 10px solid #ededed;
+    border-top: 10px solid #23a6f0;
+    border-radius: 50%;
+    position: absolute;
+    animation: spin 2s linear infinite;
+    z-index: 5;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
