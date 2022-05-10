@@ -107,7 +107,7 @@ var TaskHandler = /** @class */ (function () {
             _this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
                 location.reload();
-            }, 800);
+            }, 1500);
         })["catch"](function (err) {
             state.isLoading(false);
             _this.todoAlertDiv.innerText = err.message;
@@ -156,16 +156,16 @@ var FormHandler = /** @class */ (function () {
             })["catch"](function (err) { return reject(err); });
         })
             .then(function (msg) {
-            state.isLoading(false);
+            state.isLoading(false, true);
             _this.alert.innerText = msg.message;
             _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
                 _this.reset();
                 new ModalHandler().close();
                 location.reload();
-            }, 800);
+            }, 1500);
         })["catch"](function (err) {
-            state.isLoading(false);
+            state.isLoading(false, true);
             _this.alert.innerText = err;
             _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
@@ -179,6 +179,8 @@ var FormHandler = /** @class */ (function () {
     };
     FormHandler.prototype.updateTodo = function () {
         var _this = this;
+        var state = new Spinner();
+        state.isLoading(true);
         new Promise(function (resolve, reject) {
             fetch("http://localhost:7000/todo/".concat(_this.idInput.value), {
                 method: 'PATCH',
@@ -201,14 +203,16 @@ var FormHandler = /** @class */ (function () {
             })["catch"](function (err) { return reject(err); });
         })
             .then(function (msg) {
+            state.isLoading(false, true);
             _this.alert.innerText = msg.message;
             _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
                 _this.reset();
                 new ModalHandler().close();
                 location.reload();
-            }, 800);
+            }, 1500);
         })["catch"](function (err) {
+            state.isLoading(false, true);
             _this.alert.innerText = err;
             _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
@@ -263,15 +267,25 @@ var Spinner = /** @class */ (function () {
     function Spinner() {
         this.wrapper = document.getElementById('wrapper');
         this.spinner = document.getElementById('spinner');
+        this.modal = document.getElementById('modal');
     }
-    Spinner.prototype.isLoading = function (state) {
+    Spinner.prototype.isLoading = function (state, open) {
         if (state) {
-            this.spinner.style.setProperty('display', 'block');
-            this.wrapper.style.setProperty('display', 'none');
+            this.spinner.style.setProperty('visibility', 'visible');
+            this.wrapper.style.setProperty('visibility', 'hidden');
+            this.modal.style.setProperty('visibility', 'hidden');
         }
         else {
-            this.spinner.style.setProperty('display', 'none');
-            this.wrapper.style.setProperty('display', 'block');
+            if (open) {
+                this.spinner.style.setProperty('visibility', 'hidden');
+                this.wrapper.style.setProperty('visibility', 'visible');
+                this.modal.style.setProperty('visibility', 'visible');
+            }
+            else {
+                this.spinner.style.setProperty('visibility', 'hidden');
+                this.wrapper.style.setProperty('visibility', 'visible');
+                // this.modal.style.setProperty('visibility', 'visible')
+            }
         }
     };
     return Spinner;

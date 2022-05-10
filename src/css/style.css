@@ -331,7 +331,8 @@ body {
     z-index: 5;
     top: calc(50% - 50px);
     left: calc(50% - 50px);
-    display: none;
+    /* display: none; */
+    visibility: hidden;
 }
 
 @keyframes spin {

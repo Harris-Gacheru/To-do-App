@@ -166,7 +166,7 @@ class TaskHandler {
 
             setTimeout(() => {
                 location.reload()
-            }, 800);
+            }, 1500);
         })
         .catch((err) => {  
             state.isLoading(false)
@@ -232,7 +232,7 @@ class FormHandler {
             .catch(err => reject(err))
         })
         .then(msg => {
-            state.isLoading(false)
+            state.isLoading(false, true)
 
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
@@ -241,10 +241,10 @@ class FormHandler {
                 this.reset()
                 new ModalHandler().close()
                 location.reload()
-            }, 800);
+            }, 1500);
         })
         .catch(err => {
-            state.isLoading(false)
+            state.isLoading(false, true)
 
             this.alert.innerText = err
             this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
@@ -260,6 +260,9 @@ class FormHandler {
     }
 
     updateTodo() {
+        let state = new Spinner()
+        state.isLoading(true)
+
         new Promise<{message: string, Error: string}>((resolve, reject) => {
             fetch(`http://localhost:7000/todo/${this.idInput.value}`,
             {
@@ -284,6 +287,8 @@ class FormHandler {
             .catch(err => reject(err))
         })
         .then(msg => {
+            state.isLoading(false, true)
+
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
             
@@ -291,9 +296,11 @@ class FormHandler {
                 this.reset()
                 new ModalHandler().close()
                 location.reload()
-            }, 800);
+            }, 1500);
         })
         .catch(err => {
+            state.isLoading(false, true)
+            
             this.alert.innerText = err
             this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
         })
@@ -355,19 +362,29 @@ class ModalHandler {
 class Spinner {
     wrapper: HTMLDivElement
     spinner: HTMLDivElement
+    modal: HTMLDivElement
 
     constructor() {
         this.wrapper = <HTMLDivElement>document.getElementById('wrapper')
         this.spinner = <HTMLDivElement>document.getElementById('spinner')
+        this.modal = <HTMLDivElement>document.getElementById('modal')        
     }
 
-    isLoading(state: boolean) {
+    isLoading(state: boolean, open? : boolean) {
         if (state) {
-            this.spinner.style.setProperty('display', 'block')
-            this.wrapper.style.setProperty('display', 'none')
+            this.spinner.style.setProperty('visibility', 'visible')
+            this.wrapper.style.setProperty('visibility', 'hidden')
+            this.modal.style.setProperty('visibility', 'hidden')
         } else {
-            this.spinner.style.setProperty('display', 'none')
-            this.wrapper.style.setProperty('display', 'block')
+            if (open) {
+                this.spinner.style.setProperty('visibility', 'hidden')
+                this.wrapper.style.setProperty('visibility', 'visible')
+                this.modal.style.setProperty('visibility', 'visible')
+            } else {
+                this.spinner.style.setProperty('visibility', 'hidden')
+                this.wrapper.style.setProperty('visibility', 'visible')
+                // this.modal.style.setProperty('visibility', 'visible')
+            }
         }
     }
 }

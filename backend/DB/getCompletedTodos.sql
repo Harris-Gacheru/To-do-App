@@ -4,6 +4,6 @@ BEGIN
 
 SELECT id, title, description, FORMAT(due_date, 'dd/MM/yyyy') as due_date, assigned_to,  FORMAT(completed_at, 'dd/MM/yyyy') as completed_at, status, created_at, DATEDIFF(hour, completed_at, due_date) as hourDifference FROM Todos
 WHERE status = 'complete'
-ORDER BY created_at
+ORDER BY created_at ASC
 
 END

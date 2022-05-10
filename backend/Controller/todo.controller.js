@@ -120,7 +120,39 @@ const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 .input('due_date', mssql_1.default.VarChar, due_date)
                 .input('assigned_to', mssql_1.default.VarChar, assigned_to)
                 .execute('updateTodo');
-            res.json({ message: 'Todo updated successfuly' });
+            if (todo.recordset[0].assigned_to !== assigned_to) {
+                try {
+                    let transporter = nodemailer_1.default.createTransport({ port: 587, host: 'smtp.gmail.com', secure: false, requireTLS: true, auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS } });
+                    yield transporter.sendMail({
+                        from: process.env.EMAIL,
+                        to: todo.recordset[0].assigned_to,
+                        subject: 'Task Unassignment',
+                        text: 'Task Reassignment',
+                        html: `<p>Hello, </p>
+                        <p>You have been unassigned the task: </p>
+                        <p><span style="font-weight: bold;">Title: </span>${todo.recordset[0].title}</p>
+                        <p><span style="font-weight: bold;">Description: </span>${todo.recordset[0].description}</p>`
+                    });
+                    yield transporter.sendMail({
+                        from: process.env.EMAIL,
+                        to: assigned_to,
+                        subject: 'New Task Assigned',
+                        text: 'Task assignment',
+                        html: `<p>Hello, </p>
+                        <p>You have been assigned a new task. Task details are as follows: </p>
+                        <p><span style="font-weight: bold;">Title: </span>${title}</p>
+                        <p><span style="font-weight: bold;">Description: </span>${description}</p>
+                        <p style="font-weight: bold;"><span>Due date: </span>${due_date}</p>`
+                    });
+                    res.json({ message: 'Todo updated and reassigned successfully' });
+                }
+                catch (error) {
+                    res.json({ Error: error });
+                }
+            }
+            else {
+                res.json({ message: 'Todo updated successfully' });
+            }
         }
     }
     catch (error) {
