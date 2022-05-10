@@ -148,6 +148,9 @@ class TaskHandler {
     }
 
     markAsComplete(id: string) {
+        let state = new Spinner()
+        state.isLoading(true)
+
         fetch(`http://localhost:7000/todo/status/${id}`, {
             method: 'PATCH',
             headers: {
@@ -156,6 +159,8 @@ class TaskHandler {
         })
         .then(res =>  res.json())
         .then(result => {
+            state.isLoading(false)
+
             this.todoAlertDiv.innerText = result.message
             this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
 
@@ -164,6 +169,8 @@ class TaskHandler {
             }, 800);
         })
         .catch((err) => {  
+            state.isLoading(false)
+
             this.todoAlertDiv.innerText = err.message
             this.todoAlertDiv.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'          
         })
@@ -198,6 +205,9 @@ class FormHandler {
     }
 
     submit() {
+        let state = new Spinner()
+        state.isLoading(true)
+
         new Promise<{message: string, Error: string}> ((resolve, reject) => {
             fetch('http://localhost:7000/todo/create', 
             {
@@ -222,6 +232,8 @@ class FormHandler {
             .catch(err => reject(err))
         })
         .then(msg => {
+            state.isLoading(false)
+
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
             
@@ -232,6 +244,8 @@ class FormHandler {
             }, 800);
         })
         .catch(err => {
+            state.isLoading(false)
+
             this.alert.innerText = err
             this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px'
         })
@@ -272,6 +286,7 @@ class FormHandler {
         .then(msg => {
             this.alert.innerText = msg.message
             this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px'
+            
             setTimeout(() => {
                 this.reset()
                 new ModalHandler().close()
@@ -333,6 +348,26 @@ class ModalHandler {
             this.updateTaskForm.style.setProperty('display', 'block') 
         }  else{
             this.updateTaskForm.style.setProperty('display', 'none') 
+        }
+    }
+}
+
+class Spinner {
+    wrapper: HTMLDivElement
+    spinner: HTMLDivElement
+
+    constructor() {
+        this.wrapper = <HTMLDivElement>document.getElementById('wrapper')
+        this.spinner = <HTMLDivElement>document.getElementById('spinner')
+    }
+
+    isLoading(state: boolean) {
+        if (state) {
+            this.spinner.style.setProperty('display', 'block')
+            this.wrapper.style.setProperty('display', 'none')
+        } else {
+            this.spinner.style.setProperty('display', 'none')
+            this.wrapper.style.setProperty('display', 'block')
         }
     }
 }

@@ -92,6 +92,8 @@ var TaskHandler = /** @class */ (function () {
     };
     TaskHandler.prototype.markAsComplete = function (id) {
         var _this = this;
+        var state = new Spinner();
+        state.isLoading(true);
         fetch("http://localhost:7000/todo/status/".concat(id), {
             method: 'PATCH',
             headers: {
@@ -100,12 +102,14 @@ var TaskHandler = /** @class */ (function () {
         })
             .then(function (res) { return res.json(); })
             .then(function (result) {
+            state.isLoading(false);
             _this.todoAlertDiv.innerText = result.message;
             _this.todoAlertDiv.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
                 location.reload();
             }, 800);
         })["catch"](function (err) {
+            state.isLoading(false);
             _this.todoAlertDiv.innerText = err.message;
             _this.todoAlertDiv.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
@@ -128,6 +132,8 @@ var FormHandler = /** @class */ (function () {
     }
     FormHandler.prototype.submit = function () {
         var _this = this;
+        var state = new Spinner();
+        state.isLoading(true);
         new Promise(function (resolve, reject) {
             fetch('http://localhost:7000/todo/create', {
                 method: 'POST',
@@ -150,6 +156,7 @@ var FormHandler = /** @class */ (function () {
             })["catch"](function (err) { return reject(err); });
         })
             .then(function (msg) {
+            state.isLoading(false);
             _this.alert.innerText = msg.message;
             _this.alert.style.cssText = 'background-color: #c2fec2; color: #00cb00; padding: 10px; border: 1px solid #00cb00; border-radius: 4px';
             setTimeout(function () {
@@ -158,6 +165,7 @@ var FormHandler = /** @class */ (function () {
                 location.reload();
             }, 800);
         })["catch"](function (err) {
+            state.isLoading(false);
             _this.alert.innerText = err;
             _this.alert.style.cssText = 'background-color: #fec1c1; color: #ff2e2e; padding: 10px; border: 1px solid #ff2e2e; border-radius: 4px';
         });
@@ -250,6 +258,23 @@ var ModalHandler = /** @class */ (function () {
         }
     };
     return ModalHandler;
+}());
+var Spinner = /** @class */ (function () {
+    function Spinner() {
+        this.wrapper = document.getElementById('wrapper');
+        this.spinner = document.getElementById('spinner');
+    }
+    Spinner.prototype.isLoading = function (state) {
+        if (state) {
+            this.spinner.style.setProperty('display', 'block');
+            this.wrapper.style.setProperty('display', 'none');
+        }
+        else {
+            this.spinner.style.setProperty('display', 'none');
+            this.wrapper.style.setProperty('display', 'block');
+        }
+    };
+    return Spinner;
 }());
 // open modal
 var openModal = function () {
